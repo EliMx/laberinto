@@ -1,0 +1,275 @@
+package javaapplication52;
+
+import java.util.LinkedList;
+import java.util.Stack;
+
+/**
+ * Selene Elizabeth Perez Sesma
+**/
+public class laberinto {
+
+    public static void main(String[] args) {
+        int mapita[][] = llenado();
+        LinkedList<cell> camino = coordenadasPosibles(mapita);
+
+        cell inicio = new cell(1, 2);
+        cell fin = new cell(10, 10);
+        Stack<cell> actual = new Stack();
+        actual.push(inicio);
+        LinkedList<cell> Vis = new LinkedList();
+        //Vis.push(actual.peek());
+        while (!actual.peek().equals(fin)) {
+            String peek = convertir(actual.peek());
+            String finS = convertir(fin);
+            if (peek.equals(finS)) {
+                System.out.println("Eureka!!!");
+                break;
+            } else {
+                Vis = actualizarVisitados(Vis, actual);
+                // System.out.println("////////////////PRIMER FILTRO///////////////////");
+                LinkedList<cell> p1 = busqueda(actual);
+                //imprimirP(p1);//imprimir posibilidades
+                //System.out.println("////////////////////SEGUNDO FILTRO///////////////");
+                LinkedList<cell> p2 = filtrarPorVisitados(p1, Vis);
+                //imprimirP(p2);//imprimir posibilidades
+                //System.out.println("////////////////////TERCER FILTRO///////////////");
+                LinkedList<cell> p3 = filtrarPorCaminito(p2, camino);
+                int s = p3.size();
+
+                //System.out.println(s);
+                imprimirP(p3);//imprimir posibilidades
+                actual = actualizarActual(p3, actual);
+                Stack ac = actualizarActual(p3, actual);
+                if (s == 0) {
+                    System.out.println("Vuelve atras ");
+                    actual.pop();
+                    System.out.println(actual.peek().x + "," + actual.peek().y);
+
+                }
+            }
+        }
+    }
+
+    private static int[][] llenado() {
+
+        int mapita[][]
+                = {{2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2},//0
+                {2, 1, 3, 1, 1, 1, 1, 1, 1, 1, 1, 2},//1
+                {2, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 2},//2
+                {2, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 2},//3
+                {2, 1, 0, 0, 1, 0, 1, 0, 0, 0, 1, 2},//4
+                {2, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 2},//5
+                {2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2},//6
+                {2, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 2},//7
+                {2, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 2},//8
+                {2, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 2},//9
+                {2, 1, 0, 0, 0, 0, 1, 0, 0, 0, 4, 2},//10
+                {2, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 2},//11
+                {2, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 2},//12
+                {2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2}};//13
+        //0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,11
+
+        return mapita;
+
+    }
+
+    private static LinkedList coordenadasPosibles(int[][] mapita) {
+        cell c = null;
+        LinkedList<cell> celdas = new LinkedList();
+        int x = mapita.length; //14
+        int y = mapita.length - 2; //12
+        Stack s = new Stack();
+        for (int i = 0; i < x; i++) {
+            for (int j = 0; j < y; j++) {
+                int r = mapita[i][j];
+                // System.out.println(r);
+                if (r == 0 || r == 3 || r == 4) {
+                    int coorx = i;
+                    int coory = j;
+                    c = new cell(coorx, coory);
+                    celdas.add(c);
+
+                }
+
+            }
+        }
+        //showNodo(celdas);
+        return celdas;
+    }
+
+    private static LinkedList busqueda(Stack<cell> actual) {
+        LinkedList<cell> p = new LinkedList();
+        cell peek = actual.peek();
+        int cy = peek.x;
+        int cx = peek.y;
+        cell a = getA(cx, cy);
+        cell b = getB(cx, cy);
+        cell c = getC(cx, cy);
+        cell d = getD(cx, cy);
+
+        p.push(a);
+        p.push(b);
+        p.push(c);
+        p.push(d);
+
+        return p;
+    }
+
+    private static cell getA(int coory, int coorx) {
+        int x = coorx - 1;
+        int y = coory;
+        cell c = new cell(x, y);
+        return c;
+
+    }
+
+    private static cell getB(int coory, int coorx) {
+        int x = coorx;
+        int y = coory + 1;
+        cell c = new cell(x, y);
+        return c;
+
+    }
+
+    private static cell getC(int coory, int coorx) {
+        int x = coorx + 1;
+        int y = coory;
+        cell c = new cell(x, y);
+        return c;
+
+    }
+
+    private static cell getD(int coory, int coorx) {
+        int x = coorx;
+        int y = coory - 1;
+        cell c = new cell(x, y);
+        return c;
+
+    }
+
+    private static void imprimirP(LinkedList<cell> p) {
+        for (cell po : p) {
+            show(po);
+        }
+    }
+
+    private static void show(cell po) {
+        System.out.println(po.x + "," + po.y);
+    }
+
+    private static LinkedList<cell> filtrarPorVisitados(LinkedList<cell> p1, LinkedList<cell> Vis) {
+
+        LinkedList<cell> x = new LinkedList();
+
+        // System.out.println("Posibilidades " + p1.size());
+        //System.out.println("Visitados " + Vis.size());
+        cell A = p1.pop();
+        cell B = p1.pop();
+        cell C = p1.poll();
+        cell D = p1.pop();
+
+        boolean a = verificarVisitados(Vis, A);
+        boolean b = verificarVisitados(Vis, B);
+        boolean c = verificarVisitados(Vis, C);
+        boolean d = verificarVisitados(Vis, D);
+
+        if (a == false) {
+            x.add(A);
+            // System.out.println("No ha sido visitado:  " + A.x + "," + A.y);
+        }
+        if (b == false) {
+            x.add(B);
+            //System.out.println("No ha sido visitado:  " + B.x + "," + B.y);
+        }
+        if (c == false) {
+            x.add(C);
+            // System.out.println("No ha sido visitado:  " + C.x + "," + C.y);
+        }
+        if (d == false) {
+            x.add(D);
+            //System.out.println("No ha sido visitado:  " + D.x + "," + D.y);
+        }
+        //System.out.println(x.size());
+        return x;
+
+    }
+
+    private static LinkedList<cell> filtrarPorCaminito(LinkedList<cell> p2, LinkedList<cell> camino) {
+        LinkedList<cell> a = new LinkedList();
+        cell temp = null;
+        for (cell v : p2) {
+            String x = String.valueOf(v.x) + "," + String.valueOf(v.y);
+            for (cell p : camino) {
+                String y = String.valueOf(p.x) + "," + String.valueOf(p.y);
+                if (x.equals(y)) {
+                    //System.out.println("Ya fue visitado"+ p.x+","+p.y); 
+                    temp = new cell(v.x, v.y);
+                    a.push(temp);
+                } else {
+                    p2.remove(p);
+                    //System.out.println("No ha sido visitado"+ p.x+","+p.y);
+
+                }
+            }
+        }
+
+        return a;
+
+    }
+
+    private static Stack<cell> actualizarActual(LinkedList<cell> p3, Stack<cell> actual) {
+        Stack<cell> a = new Stack();
+        for (cell l : actual) {
+            a.push(l);
+        }
+        for (cell p : p3) {
+            //System.out.println("Agregamos al actual a " + p.x + "," + p.y);
+            a.push(p);
+        }
+
+        return a;
+
+    }
+
+    private static void showNodo(LinkedList<cell> celdas) {
+        for (cell c : celdas) {
+            showC(c);
+        }
+    }
+
+    private static void showC(cell c) {
+        System.out.println("Camino: " + c.x + "," + c.y);
+    }
+
+    private static LinkedList<cell> actualizarVisitados(LinkedList<cell> Vis, Stack<cell> actual) {
+        cell ac = actual.peek();
+        Vis.add(ac);
+        // System.out.println("Tamañio actualizado: " + Vis.size());
+        return Vis;
+
+    }
+
+    private static String convertir(cell p1) {
+        String a = String.valueOf(p1.x + "," + p1.y);
+        return a;
+    }
+
+    private static boolean verificarVisitados(LinkedList<cell> Vis, cell pop) {
+        boolean r = false;
+        String b = convertir(pop);
+        for (cell v : Vis) {
+            String a = convertir(v);
+            if (b.equals(a)) {
+                r = true;
+                return r;
+
+            } else {
+                r = false;
+            }
+        }
+
+        return r;
+
+    }
+
+}
